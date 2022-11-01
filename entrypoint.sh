@@ -197,8 +197,9 @@ then
     exit 0
 fi
 
-echo "$dt: **pushing tag $new to repo $full_name"
+echo "EVENT: creating local tag $new"
 # create local git tag
-git tag -f "$new"
+git tag -f "$new" || exit 1
+echo "EVENT: pushing tag $new to origin"
 # push local tag
-git push -f origin "$new"
+git push -f origin "$new" || exit 1
