@@ -2,6 +2,7 @@ name: Test
 # This workflow tests the tag action and can be used on PRs to detect (some) breaking changes.
 
 on:
+  push:
   pull_request:
     types:
       - opened
