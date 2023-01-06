@@ -127,6 +127,7 @@ fi
 
 # sanitize that the default_branch is set (via env var when running on PRs) else find it natively
     echo "The DEFAULT_BRANCH should be autodetected when tag-action runs on on PRs else must be defined, See: https://github.com/anothrNick/github-tag-action/pull/230, since is not defined we find it natively"
+    git branch -rl
     default_branch=$(git branch -rl '*/HEAD' | cut -d / -f3)
     echo "default_branch=${default_branch}"
     # re check this
