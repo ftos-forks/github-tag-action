@@ -33,6 +33,7 @@ jobs:
           DRY_RUN: true
           WITH_V: true
           VERBOSE: true
+          DEFAULT_BUMP: minor # default
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Test action main2 (with_v false)
@@ -42,10 +43,21 @@ jobs:
           DRY_RUN: true
           WITH_V: false
           VERBOSE: true
+          DEFAULT_BUMP: major
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Test action main3 (with_v false)
+        id: test_main3
+        uses: ./
+        env:
+          DRY_RUN: true
+          WITH_V: false
+          VERBOSE: true
+          DEFAULT_BUMP: none
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Use the action to generate a tag for itself
-      - name: Test action pre1-release (with_v)
+      - name: Test action pre1-release (with_v true)
         id: test_pre1
         uses: ./
         env:
@@ -54,6 +66,7 @@ jobs:
           PRERELEASE: true
           PRERELEASE_SUFFIX: test
           VERBOSE: true
+          DEFAULT_BUMP: minor # default
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Test action pre2-release (with_v false)
@@ -65,6 +78,7 @@ jobs:
           PRERELEASE: true
           PRERELEASE_SUFFIX: test
           VERBOSE: true
+          DEFAULT_BUMP: major
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Check if the action created the expected output
@@ -79,14 +93,6 @@ jobs:
           PRE1_OUTPUT_NEWTAG=${{ steps.test_pre1.outputs.new_tag }}
           PRE1_OUTPUT_PART=${{ steps.test_pre1.outputs.part }}
 
-          echo "Outputs from running the action:" >> $GITHUB_STEP_SUMMARY
-          echo "MAIN1 Tag: $MAIN1_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
-          echo "MAIN1 New tag: $MAIN1_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
-          echo "MAIN1 Part: $MAIN1_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
-          echo "PRE1 Tag: $PRE1_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
-          echo "PRE1 New tag: $PRE1_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
-          echo "PRE1 Part: $PRE1_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
-
           MAIN2_OUTPUT_TAG=${{ steps.test_main2.outputs.old_tag }}
           MAIN2_OUTPUT_NEWTAG=${{ steps.test_main2.outputs.new_tag }}
           MAIN2_OUTPUT_PART=${{ steps.test_main2.outputs.part }}
@@ -94,13 +100,28 @@ jobs:
           PRE2_OUTPUT_NEWTAG=${{ steps.test_pre2.outputs.new_tag }}
           PRE2_OUTPUT_PART=${{ steps.test_pre2.outputs.part }}
 
+          MAIN3_OUTPUT_TAG=${{ steps.test_main3.outputs.old_tag }}
+          MAIN3_OUTPUT_NEWTAG=${{ steps.test_main3.outputs.new_tag }}
+          MAIN3_OUTPUT_PART=${{ steps.test_main3.outputs.part }}
+
           echo "Outputs from running the action:" >> $GITHUB_STEP_SUMMARY
-          echo "MAIN2 Tag: $MAIN2_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
-          echo "MAIN2 New tag: $MAIN2_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
-          echo "MAIN2 Part: $MAIN2_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
-          echo "PRE2 Tag: $PRE2_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
-          echo "PRE2 New tag: $PRE2_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
-          echo "PRE2 Part: $PRE2_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
+          echo "MAIN1 with_v Tag: $MAIN1_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
+          echo "MAIN1 with_v New tag: $MAIN1_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
+          echo "MAIN1 with_v Part: $MAIN1_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
+          echo "PRE1 with_v Tag: $PRE1_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
+          echo "PRE1 with_v New tag: $PRE1_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
+          echo "PRE1 with_v Part: $PRE1_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
+
+          echo "MAIN2 without_v Tag: $MAIN2_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
+          echo "MAIN2 without_v New tag: $MAIN2_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
+          echo "MAIN2 without_v Part: $MAIN2_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
+          echo "PRE2 without_v Tag: $PRE2_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
+          echo "PRE2 without_v New tag: $PRE2_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
+          echo "PRE2 without_v Part: $PRE2_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
+
+          echo "MAIN3 without_v Tag: $MAIN3_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
+          echo "MAIN3 without_v New tag: $MAIN3_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
+          echo "MAIN3 without_v Part: $MAIN3_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
 
           # check that the original tag got bumped either major, minor, patch
           verlte() {
@@ -110,19 +131,22 @@ jobs:
             [ "$1" = "$2" ] && return 1 || verlte $1 $2
           }
 
+          # needs to be a greater tag in default minor
           main1="$(verlt $MAIN1_OUTPUT_TAG $MAIN1_OUTPUT_NEWTAG && true || false)"
           pre1="$(verlt $PRE1_OUTPUT_TAG $PRE1_OUTPUT_NEWTAG && true || false)"
 
+          # needs to be a greater tag in bump major
           main2="$(verlt $MAIN2_OUTPUT_TAG $MAIN2_OUTPUT_NEWTAG && true || false)"
           pre2="$(verlt $PRE2_OUTPUT_TAG $PRE2_OUTPUT_NEWTAG && true || false)"
 
-          if $main1 && $pre1 && $main2 && $pre2
+          # needs to be the same tag when bump is none
+          main3="$(verlt $MAIN2_OUTPUT_TAG $MAIN2_OUTPUT_NEWTAG && false || true)"
+
+          if $main1 && $pre1 && $main2 && $pre2 && $main3
           then
             echo "The tags were created correctly" >> $GITHUB_STEP_SUMMARY
           else
             echo "Tags not created correctly" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
-
-          # todo add test for #none bump
 
