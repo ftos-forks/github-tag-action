@@ -25,8 +25,8 @@ jobs:
           fetch-depth: '0'
 
       # Use the action to generate a tag for itself
-      - name: Test action main
-        id: test_main
+      - name: Test action main1 (with_v true)
+        id: test_main1
         uses: ./
         env:
           DRY_RUN: true
@@ -34,13 +34,33 @@ jobs:
           VERBOSE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Test action main2 (with_v false)
+        id: test_main2
+        uses: ./
+        env:
+          DRY_RUN: true
+          WITH_V: false
+          VERBOSE: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       # Use the action to generate a tag for itself
-      - name: Test action pre-release
-        id: test_pre
+      - name: Test action pre1-release (with_v)
+        id: test_pre1
         uses: ./
         env:
           DRY_RUN: true
           WITH_V: true
+          PRERELEASE: true
+          PRERELEASE_SUFFIX: test
+          VERBOSE: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Test action pre2-release (with_v false)
+        id: test_pre2
+        uses: ./
+        env:
+          DRY_RUN: true
+          WITH_V: false
           PRERELEASE: true
           PRERELEASE_SUFFIX: test
           VERBOSE: true
@@ -51,20 +71,35 @@ jobs:
         shell: bash
         run: |
           set -x
-          MAIN_OUTPUT_TAG=${{ steps.test_main.outputs.old_tag }}
-          MAIN_OUTPUT_NEWTAG=${{ steps.test_main.outputs.new_tag }}
-          MAIN_OUTPUT_PART=${{ steps.test_main.outputs.part }}
-          PRE_OUTPUT_TAG=${{ steps.test_pre.outputs.old_tag }}
-          PRE_OUTPUT_NEWTAG=${{ steps.test_pre.outputs.new_tag }}
-          PRE_OUTPUT_PART=${{ steps.test_pre.outputs.part }}
+          MAIN1_OUTPUT_TAG=${{ steps.test_main1.outputs.old_tag }}
+          MAIN1_OUTPUT_NEWTAG=${{ steps.test_main1.outputs.new_tag }}
+          MAIN1_OUTPUT_PART=${{ steps.test_main1.outputs.part }}
+          PRE1_OUTPUT_TAG=${{ steps.test_pre1.outputs.old_tag }}
+          PRE1_OUTPUT_NEWTAG=${{ steps.test_pre1.outputs.new_tag }}
+          PRE1_OUTPUT_PART=${{ steps.test_pre1.outputs.part }}
 
           echo "Outputs from running the action:" >> $GITHUB_STEP_SUMMARY
-          echo "MAIN Tag: $MAIN_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
-          echo "MAIN New tag: $MAIN_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
-          echo "MAIN Part: $MAIN_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
-          echo "PRE Tag: $PRE_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
-          echo "PRE New tag: $PRE_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
-          echo "PRE Part: $PRE_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
+          echo "MAIN1 Tag: $MAIN1_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
+          echo "MAIN1 New tag: $MAIN1_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
+          echo "MAIN1 Part: $MAIN1_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
+          echo "PRE1 Tag: $PRE1_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
+          echo "PRE1 New tag: $PRE1_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
+          echo "PRE1 Part: $PRE1_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
+
+          MAIN2_OUTPUT_TAG=${{ steps.test_main2.outputs.old_tag }}
+          MAIN2_OUTPUT_NEWTAG=${{ steps.test_main2.outputs.new_tag }}
+          MAIN2_OUTPUT_PART=${{ steps.test_main2.outputs.part }}
+          PRE2_OUTPUT_TAG=${{ steps.test_pre2.outputs.old_tag }}
+          PRE2_OUTPUT_NEWTAG=${{ steps.test_pre2.outputs.new_tag }}
+          PRE2_OUTPUT_PART=${{ steps.test_pre2.outputs.part }}
+
+          echo "Outputs from running the action:" >> $GITHUB_STEP_SUMMARY
+          echo "MAIN2 Tag: $MAIN2_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
+          echo "MAIN2 New tag: $MAIN2_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
+          echo "MAIN2 Part: $MAIN2_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
+          echo "PRE2 Tag: $PRE2_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
+          echo "PRE2 New tag: $PRE2_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
+          echo "PRE2 Part: $PRE2_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
 
           # check that the original tag got bumped either major, minor, patch
           verlte() {
@@ -74,10 +109,13 @@ jobs:
             [ "$1" = "$2" ] && return 1 || verlte $1 $2
           }
 
-          main="$(verlt $MAIN_OUTPUT_TAG $MAIN_OUTPUT_NEWTAG && true || false)"
-          pre="$(verlt $PRE_OUTPUT_TAG $PRE_OUTPUT_NEWTAG && true || false)"
+          main1="$(verlt $MAIN1_OUTPUT_TAG $MAIN1_OUTPUT_NEWTAG && true || false)"
+          pre1="$(verlt $PRE1_OUTPUT_TAG $PRE1_OUTPUT_NEWTAG && true || false)"
 
-          if $main && $pre
+          main2="$(verlt $MAIN2_OUTPUT_TAG $MAIN2_OUTPUT_NEWTAG && true || false)"
+          pre2="$(verlt $PRE2_OUTPUT_TAG $PRE2_OUTPUT_NEWTAG && true || false)"
+
+          if $main1 && $pre1 && $main2 && $pre2
           then
             echo "The tags were created correctly" >> $GITHUB_STEP_SUMMARY
           else
