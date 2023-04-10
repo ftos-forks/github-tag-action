@@ -104,21 +104,23 @@ jobs:
           MAIN3_OUTPUT_NEWTAG=${{ steps.test_main3.outputs.new_tag }}
           MAIN3_OUTPUT_PART=${{ steps.test_main3.outputs.part }}
 
-          echo "Outputs from running the action:" >> $GITHUB_STEP_SUMMARY
+          echo ">> MAIN tests with_v, default bump:" >> $GITHUB_STEP_SUMMARY
           echo "MAIN1 with_v Tag: $MAIN1_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
           echo "MAIN1 with_v New tag: $MAIN1_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
           echo "MAIN1 with_v Part: $MAIN1_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
+          echo ">> Pre-release tests with_v, default bump:" >> $GITHUB_STEP_SUMMARY
           echo "PRE1 with_v Tag: $PRE1_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
           echo "PRE1 with_v New tag: $PRE1_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
           echo "PRE1 with_v Part: $PRE1_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
-
+          echo ">> MAIN tests without_v, bump major:" >> $GITHUB_STEP_SUMMARY
           echo "MAIN2 without_v Tag: $MAIN2_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
           echo "MAIN2 without_v New tag: $MAIN2_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
           echo "MAIN2 without_v Part: $MAIN2_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
+          echo ">> Pre-release tests without_v, bump major:" >> $GITHUB_STEP_SUMMARY
           echo "PRE2 without_v Tag: $PRE2_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
           echo "PRE2 without_v New tag: $PRE2_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
           echo "PRE2 without_v Part: $PRE2_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
-
+          echo ">> MAIN tests without_v, bump none:" >> $GITHUB_STEP_SUMMARY
           echo "MAIN3 without_v Tag: $MAIN3_OUTPUT_TAG" >> $GITHUB_STEP_SUMMARY
           echo "MAIN3 without_v New tag: $MAIN3_OUTPUT_NEWTAG" >> $GITHUB_STEP_SUMMARY
           echo "MAIN3 without_v Part: $MAIN3_OUTPUT_PART" >> $GITHUB_STEP_SUMMARY
@@ -134,11 +136,9 @@ jobs:
           # needs to be a greater tag in default minor
           main1="$(verlt $MAIN1_OUTPUT_TAG $MAIN1_OUTPUT_NEWTAG && true || false)"
           pre1="$(verlt $PRE1_OUTPUT_TAG $PRE1_OUTPUT_NEWTAG && true || false)"
-
           # needs to be a greater tag in bump major
           main2="$(verlt $MAIN2_OUTPUT_TAG $MAIN2_OUTPUT_NEWTAG && true || false)"
           pre2="$(verlt $PRE2_OUTPUT_TAG $PRE2_OUTPUT_NEWTAG && true || false)"
-
           # needs to be the same tag when bump is none
           main3="$(verlt $MAIN2_OUTPUT_TAG $MAIN2_OUTPUT_NEWTAG && false || true)"
 
