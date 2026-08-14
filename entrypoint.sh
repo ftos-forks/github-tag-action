@@ -100,8 +100,13 @@ then
   tagPrefix=$tag_prefix
 fi
 
-tagFmt="^$tagPrefix?[0-9]+\.[0-9]+\.[0-9]+$"
-preTagFmt="^$tagPrefix?[0-9]+\.[0-9]+\.[0-9]+(-$suffix\.[0-9]+)$"
+if [[ "$with_v" == true ]]; then
+    tagFmt="^$tagPrefix?[0-9]+\.[0-9]+\.[0-9]+$"
+    preTagFmt="^$tagPrefix?[0-9]+\.[0-9]+\.[0-9]+(-$suffix\.[0-9]+)$"
+else
+    tagFmt="^[0-9]+\.[0-9]+\.[0-9]+$"
+    preTagFmt="^[0-9]+\.[0-9]+\.[0-9]+(-${suffix}\.[0-9]+)$"
+fi
 
 # get the git refs
 git_refs=
